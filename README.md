@@ -3,10 +3,6 @@
 Парсер `.env`-файлов на Haskell
 
 
-
-git 
-
-
 # Задачи
 - cabal парсер надо
 - Организовать app
@@ -14,4 +10,17 @@ git
 
 
 
+
+
+
 Варнинги кабала
+
+https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Data-Char.html
+
+
+---
+# Тестирование
+`cabal repl`
+`:m +Parser`
+`:r`
+`TEST`
