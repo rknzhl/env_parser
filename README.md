@@ -11,8 +11,6 @@
 
 
 
-
-
 Варнинги кабала
 
 https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Data-Char.html
