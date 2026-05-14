@@ -25,4 +25,7 @@
 cabal repl
 :m +Parser
 :r
+
+:r
+parseAssignment "NAME=hello"
 ```

@@ -74,3 +74,18 @@ parseValue s =
   case parseRawChunks s of
     Left err -> Left err
     Right chunks -> Right (Raw (normalizeChunks (trimRightChunks chunks)))
+
+parseAssignment :: String -> Either String Binding
+parseAssignment s =
+  let stripped = stripExport s
+  in case parseName stripped of
+    ("", _) -> Left ("bad name: " ++ take 20 stripped)
+    (name, rest) ->
+      case dropWhile isSpaceChar rest of
+        ('=' : valueStr) ->
+          case parseValue (dropWhile isSpaceChar valueStr) of
+            Left err -> Left err
+            Right val -> Right (Binding name val)
+        _ -> Left ("missing '=': " ++ name)
+  where
+    isSpaceChar c = c == ' ' || c == '\t'
