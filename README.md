@@ -2,23 +2,27 @@
 
 Парсер `.env`-файлов на Haskell
 
+# НОРМ?
 
-# Задачи
-- cabal парсер надо
-- Организовать app
-- Сделать папочку с тестами, я потом начну парсер
+- `isNameChar` — символ допустим в имени переменной
+- `parseName` — вырезает имя из начала строки
 
+- `stripExport` — убирает `export` если есть
+- `parseSingleQuoted` — парсит `'...'`, запрещает `$(`, чтобы не хакали в энвах
+- `parseRawChunks` — парсит значение, стопается на `#`
 
+- `trimRightChunks` — обрезает пробелы справа
+- `parseDoubleChunks` — парсит `"..."` с `$VAR` внутри - есть такие подстаговки в ""
+- `parseValue` — выбирает парсер по первому символу
+- `parseAssignment` — парсит строку `NAME=value`
+- `parseLine` — пропускает пустые строки и комментарии
+- `parseLines` — парсит списк строк рекурсивно
+- `parseEnvFile` —  точка входа
 
+## Тестирование
 
-Варнинги кабала
-
-https://hackage-content.haskell.org/package/base-4.22.0.0/docs/Data-Char.html
-
-
----
-# Тестирование
-`cabal repl`
-`:m +Parser`
-`:r`
-`TEST`
+```
+cabal repl
+:m +Parser
+:r
+```
