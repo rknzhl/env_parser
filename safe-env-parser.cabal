@@ -1,0 +1,19 @@
+cabal-version: 3.0
+name: safe-env-parser
+version: 0.1.0.0
+
+library
+  exposed-modules: Ast
+  hs-source-dirs: src
+  build-depends: base >= 4.14 && < 5
+
+executable safe-env-parser
+  main-is: Main.hs
+  hs-source-dirs: app
+  build-depends: base >= 4.14 && < 5, safe-env-parser
+
+test-suite safe-env-parser-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  hs-source-dirs: test
+  build-depends: base >= 4.14 && < 5, safe-env-parser
