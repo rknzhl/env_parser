@@ -1,4 +1,4 @@
-module Parser where
+module Parser (parseEnvFile) where
 
 import Ast
 import Data.Char (isAlphaNum, isLetter)
@@ -73,7 +73,7 @@ parseValue ('\'' : rest) = parseSingleQuoted rest
 parseValue s =
   case parseRawChunks s of
     Left err -> Left err
-    Right chunks -> Right (Raw (normalizeChunks (trimRightChunks chunks)))
+    Right chunks -> Right (Raw (trimRightChunks (normalizeChunks chunks)))
 
 parseAssignment :: String -> Either String Binding
 parseAssignment s =
@@ -83,9 +83,37 @@ parseAssignment s =
     (name, rest) ->
       case dropWhile isSpaceChar rest of
         ('=' : valueStr) ->
-          case parseValue (dropWhile isSpaceChar valueStr) of
+          case parseValue  (dropWhile isSpaceChar valueStr) of
             Left err -> Left err
             Right val -> Right (Binding name val)
         _ -> Left ("missing '=': " ++ name)
   where
     isSpaceChar c = c == ' ' || c == '\t'
+
+
+parseLine :: String -> Either String (Maybe Binding)
+parseLine [] = Right Nothing
+parseLine ('#' : _) = Right Nothing
+parseLine s = case parseAssignment s of
+  Left err -> Left err
+  Right binding -> Right (Just binding)
+
+parseLines :: [String] -> Either String [Binding]
+parseLines [] = Right []
+parseLines (line : rest) =
+  case parseLine (dropWhile isSpaceChar line) of
+    Left err ->Left err
+    Right Nothing -> parseLines rest
+    Right (Just binding) ->
+      case parseLines rest of
+        Left err -> Left err
+        Right rest -> Right (binding : rest)
+  where
+    isSpaceChar c = c== ' ' || c == '\t'
+
+
+parseEnvFile :: String -> Either String EnvFile
+parseEnvFile input =
+  case parseLines (lines input) of
+    Left err -> Left err
+    Right bindings -> Right (EnvFile bindings)
