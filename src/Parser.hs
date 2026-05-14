@@ -16,10 +16,8 @@ parseName (c : cs)
   | otherwise = ("", c : cs)
 
 stripExport :: String -> String
-stripExport s
-  | take 6 s == "export" && length s > 6 && s !! 6 == ' ' =
-      dropWhile (== ' ') (drop 6 s)
-  | otherwise = s
+stripExport ('e':'x':'p':'o':'r':'t':' ':rest) = dropWhile (== ' ') rest
+stripExport s = s
 
 parseSingleQuoted ::String -> Either String Value
 parseSingleQuoted s =
@@ -50,3 +48,29 @@ trimRightChunks [TextChunk t] =
   let trimmed = reverse (dropWhile  (\c -> c == ' ' || c == '\t') (reverse t))
   in if null trimmed then [] else [TextChunk trimmed]
 trimRightChunks (c : cs) = c : trimRightChunks cs
+
+parseDoubleChunks :: String -> Either String [Chunk]
+parseDoubleChunks [] = Left "error: unclosed double"
+parseDoubleChunks ('"' : _) = Right []
+parseDoubleChunks ('$' : c : cs)
+  | isLetter c || c == '_'=
+      let (more, rest) = span isNameChar cs
+      in case parseDoubleChunks rest of
+           Left err -> Left err
+           Right chunks -> Right (VarRef (c : more) : chunks)
+parseDoubleChunks (c : cs) =
+  case parseDoubleChunks cs of
+    Left err -> Left err
+    Right chunks -> Right (TextChunk [c] : chunks)
+
+parseValue :: String -> Either String Value
+parseValue [] = Right (Raw [])
+parseValue ('"' : rest) =
+  case parseDoubleChunks rest of
+    Left err -> Left err
+    Right chunks -> Right (DoubleQuoted (normalizeChunks chunks))
+parseValue ('\'' : rest) = parseSingleQuoted rest
+parseValue s =
+  case parseRawChunks s of
+    Left err -> Left err
+    Right chunks -> Right (Raw (normalizeChunks (trimRightChunks chunks)))
