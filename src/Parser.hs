@@ -13,6 +13,16 @@ isDoubleChar c = c /= '"' && c /= '$' && c /= '\\' && c /= '`'
 isRawChar :: Char -> Bool
 isRawChar c = c /= '$' && c /= '#' && c /= '`'
 
+parseEscape :: Char -> Either String String
+parseEscape 'n'= Right "\n"
+parseEscape 't' = Right "\t"
+parseEscape 'r' = Right "\r"
+parseEscape '\\' = Right "\\"
+parseEscape '"' = Right "\""
+parseEscape '$' = Right "$"
+parseEscape '`' = Right "`"
+parseEscape c = Left ("unknown esc: \\" ++ [c])
+
 parseName :: String ->(String, String)
 parseName [] = ("", [])
 parseName (c : cs)
