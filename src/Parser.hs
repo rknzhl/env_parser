@@ -7,6 +7,12 @@ import Data.List (isInfixOf)
 isNameChar :: Char -> Bool
 isNameChar c = isAlphaNum c || c == '_'
 
+isDoubleChar :: Char -> Bool
+isDoubleChar c = c /= '"' && c /= '$' && c /= '\\' && c /= '`'
+
+isRawChar :: Char -> Bool
+isRawChar c = c /= '$' && c /= '#' && c /= '`'
+
 parseName :: String ->(String, String)
 parseName [] = ("", [])
 parseName (c : cs)
