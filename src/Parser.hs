@@ -23,6 +23,33 @@ parseEscape '$' = Right "$"
 parseEscape '`' = Right "`"
 parseEscape c = Left ("unknown esc: \\" ++ [c])
 
+parseBracedRef :: String -> (String -> Either String [Chunk]) -> Either String [Chunk]
+parseBracedRef s cont =
+  case parseName s of
+    ("", _) ->
+      case cont s of
+        Left err -> Left err
+        Right chunks -> Right (TextChunk "${" : chunks)
+    (name, rest) ->
+      let after = case rest of
+                    ('}' : r) -> r
+                    r -> r
+      in case cont after of
+           Left err -> Left err
+           Right chunks -> Right (VarRef name : chunks)
+
+parseSimpleRef :: String ->(String -> Either String [Chunk]) -> Either String [Chunk]
+parseSimpleRef s cont =
+  case parseName s of
+    ("", _) ->
+      case cont s of
+        Left err -> Left err
+        Right chunks -> Right (TextChunk "$" : chunks)
+    (name, rest) ->
+      case cont rest of
+        Left err ->Left err
+        Right chunks-> Right (VarRef name : chunks)
+
 parseName :: String ->(String, String)
 parseName [] = ("", [])
 parseName (c : cs)
@@ -66,18 +93,25 @@ trimRightChunks [TextChunk t] =
 trimRightChunks (c : cs) = c : trimRightChunks cs
 
 parseDoubleChunks :: String -> Either String [Chunk]
-parseDoubleChunks [] = Left "error: unclosed double"
+parseDoubleChunks [] = Left "error: unclosed double quote"
 parseDoubleChunks ('"' : _) = Right []
-parseDoubleChunks ('$' : c : cs)
-  | isLetter c || c == '_'=
-      let (more, rest) = span isNameChar cs
-      in case parseDoubleChunks rest of
-           Left err -> Left err
-           Right chunks -> Right (VarRef (c : more) : chunks)
-parseDoubleChunks (c : cs) =
-  case parseDoubleChunks cs of
+parseDoubleChunks ('`' : _) = Left "error: backtick is forbidden"
+parseDoubleChunks ('$' : '(' : _) = Left "error: $(...) is forbidden"
+parseDoubleChunks ('$' : '{' : rest) = parseBracedRef rest parseDoubleChunks
+parseDoubleChunks ('$' : rest) = parseSimpleRef rest parseDoubleChunks
+parseDoubleChunks ('\\' : []) = Left "error: trailing backslash"
+parseDoubleChunks ('\\' : c : rest) =
+  case parseEscape c of
     Left err -> Left err
-    Right chunks -> Right (TextChunk [c] : chunks)
+    Right text ->
+      case parseDoubleChunks rest of
+        Left err -> Left err
+        Right chunks -> Right (TextChunk text : chunks)
+parseDoubleChunks s =
+  let (text, rest) = span isDoubleChar s
+  in case parseDoubleChunks rest of
+       Left err -> Left err
+       Right chunks -> Right (TextChunk text : chunks)
 
 parseValue :: String -> Either String Value
 parseValue [] = Right (Raw [])
