@@ -72,18 +72,17 @@ parseSingleQuoted s =
         else Right (SingleQuoted content)
 
 parseRawChunks :: String -> Either String [Chunk]
-parseRawChunks [] = Right[]
+parseRawChunks [] = Right []
 parseRawChunks ('#' : _) = Right []
-parseRawChunks ('$' : c : cs)
-  | isLetter c || c == '_' =
-      let (more, rest) = span isNameChar cs
-      in case parseRawChunks rest of
-           Left err -> Left err
-           Right chunks -> Right (VarRef (c : more) : chunks)
-parseRawChunks (c : cs) =
-  case parseRawChunks cs of
-    Left err -> Left err
-    Right chunks -> Right (TextChunk [c] : chunks)
+parseRawChunks ('`' : _) = Left "error: backtick is forbidden"
+parseRawChunks ('$' : '(' : _) = Left "error: $(...) is forbidden"
+parseRawChunks ('$' : '{' : rest) = parseBracedRef rest parseRawChunks
+parseRawChunks ('$' : rest) = parseSimpleRef rest parseRawChunks
+parseRawChunks s =
+  let (text, rest) = span isRawChar s
+  in case parseRawChunks rest of
+       Left err -> Left err
+       Right chunks -> Right (TextChunk text : chunks)
 
 trimRightChunks :: [Chunk] -> [Chunk]
 trimRightChunks [] =[]
@@ -162,7 +161,7 @@ parseLines (line : rest) =
     isSpaceChar c = c== ' ' || c == '\t'
 
 
-parseEnvFile :: String -> Either String EnvFile
+parseEnvFile ::String -> Either String EnvFile
 parseEnvFile input =
   case parseLines (lines input) of
     Left err -> Left err
