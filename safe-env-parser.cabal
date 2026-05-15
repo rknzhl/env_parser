@@ -3,7 +3,7 @@ name: safe-env-parser
 version: 0.1.0.0
 
 library
-  exposed-modules: Ast, Parser, Evaluator
+  exposed-modules: Ast, Parser, Evaluator, JsonOutput
   hs-source-dirs: src
   build-depends: base >= 4.14 && < 5
 
