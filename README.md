@@ -33,3 +33,18 @@ cabal repl
 :r
 parseAssignment "NAME=hello"
 ```
+## Что умеет
+
+- `KEY=value`, `KEY="value"`, `KEY='value'`
+- `export KEY=value`
+- `$VAR`, `${VAR}` — подстановка в двойных кавычках и без
+- `\n \t \r \\ \" \$` — escape в двойных кавычках
+- Одинарные кавычки — буквально, без подстановки
+- Комментарии: `# строка` и `KEY=val # хвост`
+
+## Что запрещено
+
+| Конструкция | Почему |
+|---|---|
+| `$(...)` | shell command substitution |
+| `` `...` `` | backtick command substitution |
