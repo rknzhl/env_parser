@@ -48,3 +48,9 @@ parseAssignment "NAME=hello"
 |---|---|
 | `$(...)` | shell command substitution |
 | `` `...` `` | backtick command substitution |
+
+## Ошибки
+
+- `unknown variable: $X` — переменная X не объявлена
+- `cycle detected: A -> B -> A` — циклическая зависимость
+- `duplicate variable: X` — имя X определено дважды
