@@ -66,7 +66,7 @@ parseName (c : cs)
   | otherwise = ("", c : cs)
 
 stripExport :: String -> String
-stripExport ('e' : 'x' : 'p' : 'o' : 'r' : 't' : ' ' : rest) = rest
+stripExport ('e' : 'x' : 'p' : 'o' : 'r' : 't' : ' ' : rest) = dropWhile (== ' ') rest
 stripExport s = s
 
 parseSingleQuoted :: String -> Either String Value
