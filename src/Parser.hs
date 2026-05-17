@@ -72,7 +72,7 @@ stripExport s = s
 parseSingleQuoted :: String -> Either String Value
 parseSingleQuoted s =
   case break (== '\'') s of
-    (_, []) -> Left "error: unclosd single quote"
+    (_, []) -> Left "error: unclosed single quote"
     (content, _) ->
       if "$(" `isInfixOf` content
         then Left "error: $(...) is forbidden"
