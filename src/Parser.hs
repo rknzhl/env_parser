@@ -68,8 +68,10 @@ parseSingleQuoted s =
     (_, []) -> Left "error: unclosd single quote"
     (content, _) ->
       if "$(" `isInfixOf` content
-        then Left "error: $(...)"
-        else Right (SingleQuoted content)
+        then Left "error: $(...) is forbidden"
+        else if "`" `isInfixOf` content
+          then Left "error: backtick is forbidden"
+          else Right (SingleQuoted content)
 
 parseRawChunks :: String -> Either String [Chunk]
 parseRawChunks [] = Right []
